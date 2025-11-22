@@ -1,0 +1,1575 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistem Kehadiran Dosen</title>
+  <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #667eea 100%);
+            min-height: 100%;
+            margin: 0;
+            box-sizing: border-box;
+            width: 100%;
+            overflow-x: hidden;
+        }
+
+        html, body {
+            height: 100%;
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100%;
+        }
+
+        /* Login state - centered */
+        body.login-mode {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        /* Dashboard state - scrollable */
+        body.dashboard-mode {
+            display: block;
+            padding: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* Container for login mode */
+        .container.login-container-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100%;
+        }
+
+        /* Container for dashboard mode */
+        .container.dashboard-container-wrapper {
+            padding: 20px;
+            min-height: 100%;
+        }
+
+        /* Login Page Styles */
+        .login-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            max-width: 420px;
+            width: 100%;
+            margin: 0 auto;
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .login-header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 20px 20px;
+            text-align: center;
+        }
+
+        .login-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 10px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-header h1 {
+            font-size: 20px;
+            margin-bottom: 6px;
+        }
+
+        .login-header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .login-form {
+            padding: 25px 20px;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #667eea;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 14px 14px 14px 45px;
+            border: 2px solid #e1e8ed;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group select {
+            padding-left: 14px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .login-button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .login-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .login-button:active {
+            transform: translateY(0);
+        }
+
+        /* Dashboard Styles */
+        .dashboard {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            min-height: 600px;
+        }
+
+        .dashboard-header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 45px 20px 35px 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dashboard-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .dashboard-top-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .dashboard-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .dashboard-icon {
+            width: 55px;
+            height: 55px;
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .dashboard-title h1 {
+            font-size: 26px;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .logout-button {
+            background: rgba(255, 255, 255, 0.25);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 12px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .logout-button:hover {
+            background: rgba(255, 255, 255, 0.35);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .welcome-section {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            padding: 15px 0;
+        }
+
+        .welcome-section h2 {
+            font-size: 20px;
+            margin-bottom: 8px;
+            font-weight: 600;
+            opacity: 0.95;
+        }
+
+        .welcome-section p {
+            font-size: 14px;
+            opacity: 0.8;
+            margin: 0;
+        }
+
+        .dashboard-content {
+            padding: 25px 20px;
+            background: white;
+            border-radius: 25px 25px 0 0;
+            margin-top: -15px;
+            position: relative;
+            z-index: 3;
+            box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .action-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .add-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .add-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 16px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            color: #333;
+            padding: 24px 20px;
+            border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            border: 5px solid #667eea;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+            border-color: #5a67d8;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .stat-card.green {
+            border-color: #11998e;
+        }
+
+        .stat-card.green::before {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+
+        .stat-card.orange {
+            border-color: #ee0979;
+        }
+
+        .stat-card.orange::before {
+            background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);
+        }
+
+        .stat-card.purple {
+            border-color: #9b59b6;
+        }
+
+        .stat-card.blue::before {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .stat-card.blue .stat-card-icon {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .stat-card.purple::before {
+            background: linear-gradient(135deg, #8e44ad 0%, #9b59b6 100%);
+        }
+
+        .stat-card.purple .stat-card-icon {
+            background: linear-gradient(135deg, #8e44ad 0%, #9b59b6 100%);
+        }
+
+        .stat-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .stat-card h3 {
+            font-size: 14px;
+            font-weight: 600;
+            opacity: 0.7;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .stat-card p {
+            font-size: 32px;
+            font-weight: 800;
+            margin: 0;
+            line-height: 1;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid #e1e8ed;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        thead {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+        }
+
+        th {
+            padding: 16px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        td {
+            padding: 16px;
+            border-bottom: 1px solid #e1e8ed;
+            font-size: 14px;
+            color: #333;
+        }
+
+        tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-hadir {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-tidak-hadir {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+
+        .empty-state svg {
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90%;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 24px;
+            border-radius: 16px 16px 0 0;
+        }
+
+        .modal-header h2 {
+            font-size: 20px;
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .modal-footer {
+            padding: 20px 24px;
+            border-top: 1px solid #e1e8ed;
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .btn-cancel {
+            padding: 10px 20px;
+            border: 2px solid #e1e8ed;
+            background: white;
+            color: #333;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-cancel:hover {
+            background: #f8f9fa;
+            border-color: #667eea;
+        }
+
+        .btn-submit {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: transform 0.2s ease;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+        }
+
+        .rekap-card {
+            background: white;
+            border: 2px solid #e1e8ed;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .rekap-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-color: #667eea;
+        }
+
+        .rekap-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #e1e8ed;
+        }
+
+        .rekap-header h3 {
+            color: #333;
+            font-size: 18px;
+            margin: 0;
+        }
+
+        .rekap-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .rekap-stat-item {
+            text-align: center;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .rekap-stat-item p {
+            font-size: 12px;
+            color: #6c757d;
+            margin-bottom: 4px;
+        }
+
+        .rekap-stat-item h4 {
+            font-size: 24px;
+            color: #333;
+            margin: 0;
+        }
+
+        .delete-btn {
+            background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .delete-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(238, 9, 121, 0.3);
+        }
+
+        .confirm-delete {
+            background: #dc3545 !important;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* === MOBILE DASHBOARD LAYOUT === */
+        @media (max-width: 768px) {
+            body.dashboard-mode {
+                padding: 10px;
+            }
+
+            .container.dashboard-container-wrapper {
+                padding: 0;
+            }
+
+            .dashboard {
+                max-width: 100%;
+                border-radius: 18px;
+                box-shadow: 0 12px 40px rgba(0,0,0,0.18);
+                min-height: auto;
+            }
+
+            .dashboard-header {
+                padding: 28px 16px 22px 16px;
+            }
+
+            .dashboard-title h1 {
+                font-size: 20px;
+            }
+
+            .welcome-section h2 {
+                font-size: 18px;
+            }
+
+            .welcome-section p {
+                font-size: 13px;
+            }
+
+            .dashboard-content {
+                padding: 20px 14px;
+                margin-top: -10px;
+                border-radius: 18px 18px 0 0;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .stat-card {
+                padding: 18px 14px;
+            }
+
+            .stat-card p {
+                font-size: 26px;
+            }
+
+            .action-bar {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .action-bar h2 {
+                font-size: 18px;
+            }
+
+            .add-button {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .table-container {
+                margin-top: 8px;
+            }
+
+            th, td {
+                padding: 12px 10px;
+                font-size: 13px;
+            }
+        }
+  </style>
+</head>
+<body>
+  <!-- Login Page -->
+  <div class="container login-container-wrapper" id="loginPageContainer">
+    <div class="login-container" id="loginPage">
+      <div class="login-header">
+        <div class="login-icon">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Logo-UNUJA.png/600px-Logo-UNUJA.png"
+               alt="Logo UNUJA"
+               style="width: 55px; height: 55px; object-fit: contain;"
+               onerror="this.style.display='none';">
+        </div>
+        <h1 id="appTitle">Sistem Kehadiran Dosen</h1>
+        <p style="font-size: 13px; opacity: 0.95; margin-top: 8px;">
+          Sistem Kehadiran Dosen Prodi Bahasa Arab<br>
+          Fakultas Agama Islam Universitas Nurul Jadid
+        </p>
+        <p id="welcomeMessage">Selamat datang di sistem kehadiran</p>
+      </div>
+      <form class="login-form" id="loginForm">
+        <div class="form-group">
+          <label for="username">Pilih Username</label>
+          <select id="username" required style="padding-left: 14px;">
+            <option value="">Pilih username</option>
+            <option value="admin">admin</option>
+            <option value="bachir">bachir</option>
+            <option value="indriyani">indriyani</option>
+            <option value="halim">halim</option>
+            <option value="cindi">cindi</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <div class="input-wrapper">
+            <svg class="input-icon" width="20" height="20" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            <input type="password" id="password" placeholder="Masukkan password" required>
+          </div>
+        </div>
+        <button type="submit" class="login-button">Masuk</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Dashboard -->
+  <div class="container dashboard-container-wrapper" id="dashboardContainer" style="display: none;">
+    <div class="dashboard" id="dashboard">
+      <div class="dashboard-header">
+        <div class="dashboard-top-row">
+          <div class="dashboard-title">
+            <div class="dashboard-icon">
+              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Logo-UNUJA.png/600px-Logo-UNUJA.png"
+                   alt="Logo UNUJA"
+                   style="width: 40px; height: 40px; object-fit: contain;"
+                   onerror="this.style.display='none';">
+            </div>
+            <div>
+              <h1>Rekap Kehadiran</h1>
+            </div>
+          </div>
+          <div class="user-info">
+            <div class="user-avatar">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2.5">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+            </div>
+            <button class="logout-button" id="logoutBtn">
+              <svg width="16" height="16" viewBox="0 0 24 24"
+                   fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                <polyline points="16,17 21,12 16,7"></polyline>
+                <line x1="21" y1="12" x2="9" y2="12"></line>
+              </svg>
+              Keluar
+            </button>
+          </div>
+        </div>
+        <div class="welcome-section">
+          <h2>🎓 Sistem Kehadiran Dosen</h2>
+          <p>Prodi Bahasa Arab - Fakultas Agama Islam Universitas Nurul Jadid</p>
+        </div>
+      </div>
+      <div class="dashboard-content">
+        <div class="stats-grid">
+          <div class="stat-card blue">
+            <div class="stat-card-header">
+              <h3>Total Kehadiran</h3>
+              <div class="stat-card-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2.5">
+                  <path d="M9 11l3 3L22 4"></path>
+                  <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                </svg>
+              </div>
+            </div>
+            <p id="totalKehadiran">0</p>
+          </div>
+          <div class="stat-card green">
+            <div class="stat-card-header">
+              <h3>Hadir Hari Ini</h3>
+              <div class="stat-card-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2.5">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                  <polyline points="22,4 12,14.01 9,11.01"></polyline>
+                </svg>
+              </div>
+            </div>
+            <p id="hadirHariIni">0</p>
+          </div>
+          <div class="stat-card orange">
+            <div class="stat-card-header">
+              <h3>Total Dosen</h3>
+              <div class="stat-card-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2.5">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+              </div>
+            </div>
+            <p id="totalDosen">0</p>
+          </div>
+        </div>
+
+        <div class="action-bar">
+          <h2 style="color: #333; font-size: 20px;">Data Kehadiran</h2>
+          <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <button class="add-button" id="rekapBtn"
+                    style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+              <svg width="20" height="20" viewBox="0 0 24 24"
+                   fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 11l3 3L22 4"></path>
+                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+              </svg>
+              Lihat Rekap Per Dosen
+            </button>
+            <button class="add-button" id="addBtn">
+              <svg width="20" height="20" viewBox="0 0 24 24"
+                   fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              Tambah Data Absensi
+            </button>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table id="attendanceTable">
+            <thead>
+              <tr>
+                <th>No</th>
+                <th>Nama Dosen</th>
+                <th>Mata Kuliah</th>
+                <th>Pertemuan</th>
+                <th>Semester</th>
+                <th>Tanggal</th>
+                <th>Status</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody">
+              <tr>
+                <td colspan="8">
+                  <div class="empty-state">
+                    <svg width="80" height="80" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="1">
+                      <path d="M9 11l3 3L22 4"></path>
+                      <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                    </svg>
+                    <h3>Belum Ada Data Kehadiran</h3>
+                    <p>Klik tombol "Tambah Data Absensi" untuk menambahkan data baru</p>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Rekap Per Dosen -->
+  <div class="modal" id="rekapModal">
+    <div class="modal-content" style="max-width: 700px;">
+      <div class="modal-header">
+        <h2>Rekap Kehadiran Per Dosen</h2>
+      </div>
+      <div class="modal-body">
+        <div id="rekapContent"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-cancel" id="closeRekapBtn">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Add Attendance -->
+  <div class="modal" id="addModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Tambah Data Absensi</h2>
+      </div>
+      <form id="addForm">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="dosenName" style="color: #333;">Nama Dosen</label>
+            <select id="dosenName" required style="padding-left: 14px;">
+              <option value="">Pilih dosen</option>
+              <option value="Yayah Robiatul Adawiyah, M.Pd.I">Yayah Robiatul Adawiyah, M.Pd.I</option>
+              <option value="Isnol Khotimah, M. Pd.">Isnol Khotimah, M. Pd.</option>
+              <option value="Dr. Agus Sultoni Imami, S.Psi, M.Pd.I">Dr. Agus Sultoni Imami, S.Psi, M.Pd.I</option>
+              <option value="Faizatur Rohmah, M.Pd.">Faizatur Rohmah, M.Pd.</option>
+              <option value="Dr. Sulton Firdaus, M.Pd">Dr. Sulton Firdaus, M.Pd</option>
+              <option value="Dr. Mu'alim Wijaya, M.Pd.I">Dr. Mu'alim Wijaya, M.Pd.I</option>
+              <option value="Feriska Listrianti, M.Pd.">Feriska Listrianti, M.Pd.</option>
+              <option value="Dr. Umar Manshur, M.A.">Dr. Umar Manshur, M.A.</option>
+              <option value="Hj. Wiwin Warliah, S.Fil.I., M.Sosio.">Hj. Wiwin Warliah, S.Fil.I., M.Sosio.</option>
+              <option value="Dr. Farhan, M. Sos.I">Dr. Farhan, M. Sos.I</option>
+              <option value="Dr. Bashori Alwi, M. SI">Dr. Bashori Alwi, M. SI</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="mataKuliah" style="color: #333;">Mata Kuliah</label>
+            <select id="mataKuliah" required style="padding-left: 14px;">
+              <option value="">Pilih mata kuliah</option>
+              <option value="Bahasa Arab Usia Dini">Bahasa Arab Usia Dini</option>
+              <option value="Maharah Kitabah I">Maharah Kitabah I</option>
+              <option value="Statistik Pendidikan">Statistik Pendidikan</option>
+              <option value="Psiko &amp; Sosiolinguistik">Psiko &amp; Sosiolinguistik</option>
+              <option value="Tafsir Tarbawi">Tafsir Tarbawi</option>
+              <option value="Akhlak Tasawuf">Akhlak Tasawuf</option>
+              <option value="Bahasa Indonesia">Bahasa Indonesia</option>
+              <option value="Ilmu Nahwu">Ilmu Nahwu</option>
+              <option value="Evaluasi Pembelajaran BA">Evaluasi Pembelajaran BA</option>
+              <option value="Fann At Ta`bir">Fann At Ta`bir</option>
+              <option value="Academic Writing Skill">Academic Writing Skill</option>
+              <option value="Bahasa Arab I">Bahasa Arab I</option>
+              <option value="Pancasila">Pancasila</option>
+              <option value="Bahasa Arab Profesi">Bahasa Arab Profesi</option>
+              <option value="Ilmu Shorrof">Ilmu Shorrof</option>
+              <option value="Manajemen Kursus BA">Manajemen Kursus BA</option>
+              <option value="Maharah Istima’">Maharah Istima’</option>
+              <option value="Maharah Qiro`ah">Maharah Qiro`ah</option>
+              <option value="Pengantar Psikologi">Pengantar Psikologi</option>
+              <option value="Kewarganegaraan">Kewarganegaraan</option>
+              <option value="Maharah Kalam I">Maharah Kalam I</option>
+              <option value="Metode Penelitian Kualitatif">Metode Penelitian Kualitatif</option>
+              <option value="Metode Penelitian Kuantitatif">Metode Penelitian Kuantitatif</option>
+              <option value="Ilmu Dilalah">Ilmu Dilalah</option>
+              <option value="Pengantar Studi Islam">Pengantar Studi Islam</option>
+              <option value="Ilmu Lughah">Ilmu Lughah</option>
+              <option value="Pengembangan Bahan Ajar BA">Pengembangan Bahan Ajar BA</option>
+              <option value="Ilmu Pendidikan Islam">Ilmu Pendidikan Islam</option>
+              <option value="Manajemen Pendidikan BA">Manajemen Pendidikan BA</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="pertemuan" style="color: #333;">Pertemuan</label>
+            <select id="pertemuan" required style="padding-left: 14px;">
+              <option value="">Pilih pertemuan</option>
+              <option value="Pertemuan 1">Pertemuan 1</option>
+              <option value="Pertemuan 2">Pertemuan 2</option>
+              <option value="Pertemuan 3">Pertemuan 3</option>
+              <option value="Pertemuan 4">Pertemuan 4</option>
+              <option value="Pertemuan 5">Pertemuan 5</option>
+              <option value="Pertemuan 6">Pertemuan 6</option>
+              <option value="Pertemuan 7">Pertemuan 7</option>
+              <option value="Pertemuan 8">Pertemuan 8</option>
+              <option value="Pertemuan 9">Pertemuan 9</option>
+              <option value="Pertemuan 10">Pertemuan 10</option>
+              <option value="Pertemuan 11">Pertemuan 11</option>
+              <option value="Pertemuan 12">Pertemuan 12</option>
+              <option value="Pertemuan 13">Pertemuan 13</option>
+              <option value="Pertemuan 14">Pertemuan 14</option>
+              <option value="Pertemuan 15">Pertemuan 15</option>
+              <option value="Pertemuan 16">Pertemuan 16</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="semester" style="color: #333;">Semester</label>
+            <select id="semester" required style="padding-left: 14px;">
+              <option value="">Pilih semester</option>
+              <option value="1A">1A</option>
+              <option value="1B">1B</option>
+              <option value="3A">3A</option>
+              <option value="3B">3B</option>
+              <option value="5A">5A</option>
+              <option value="5B">5B</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="tanggal" style="color: #333;">Tanggal</label>
+            <input type="date" id="tanggal" required
+                   style="background: white; color: #333; border: 2px solid #e1e8ed; padding-left: 14px;">
+          </div>
+
+          <div class="form-group">
+            <label for="status" style="color: #333;">Status Kehadiran</label>
+            <select id="status" required style="padding-left: 14px;">
+              <option value="">Pilih status</option>
+              <option value="Hadir">Hadir</option>
+              <option value="Tidak Hadir">Tidak Hadir</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" id="cancelBtn">Batal</button>
+          <button type="submit" class="btn-submit">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // URL Web App Google Apps Script
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwcSVViwQZpNfq_e6J2z8LVHY1pQmLnGzGuUgPiJPl-IEVoOdLVSQ-ldcQ7VSm0vPgZ/exec";
+
+    let attendanceData = [];
+
+    // Login accounts
+    const loginAccounts = {
+      'admin': '123',
+      'bachir': 'bachir847',
+      'indriyani': 'indriyani592',
+      'halim': 'halim316',
+      'cindi': 'cnd728'
+    };
+
+    // Set initial body class for login mode
+    document.body.classList.add('login-mode');
+
+    // ==== LOGIN ====
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+
+      if (username && loginAccounts[username] && loginAccounts[username] === password) {
+        document.getElementById('loginPageContainer').style.display = 'none';
+        document.getElementById('dashboardContainer').style.display = 'block';
+
+        document.body.classList.remove('login-mode');
+        document.body.classList.add('dashboard-mode');
+
+        renderTable();
+        updateStats();
+      } else {
+        const existingError = document.querySelector('.login-error');
+        if (existingError) {
+          existingError.remove();
+        }
+
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'login-error';
+        errorDiv.style.cssText =
+          'background: #f8d7da; color: #721c24; padding: 12px; border-radius: 8px; margin-top: 16px; text-align: center; font-size: 14px;';
+        errorDiv.innerHTML = `
+          <div style="margin-bottom: 8px;">❌ Username atau password salah!</div>
+          <div style="font-size: 12px; opacity: 0.8;">
+            Silakan periksa kembali username dan password Anda.<br>
+            Hubungi administrator jika masih mengalami masalah.
+          </div>
+        `;
+
+        document.querySelector('.login-form').appendChild(errorDiv);
+
+        setTimeout(() => {
+          errorDiv.remove();
+        }, 5000);
+      }
+    });
+
+    // ==== LOGOUT ====
+    document.getElementById('logoutBtn').addEventListener('click', function() {
+      document.getElementById('dashboardContainer').style.display = 'none';
+      document.getElementById('loginPageContainer').style.display = 'block';
+
+      document.body.classList.remove('dashboard-mode');
+      document.body.classList.add('login-mode');
+
+      document.getElementById('loginForm').reset();
+    });
+
+    // ==== MODAL TAMBAH DATA ====
+    document.getElementById('addBtn').addEventListener('click', function() {
+      document.getElementById('addModal').classList.add('active');
+      document.getElementById('tanggal').valueAsDate = new Date();
+    });
+
+    document.getElementById('cancelBtn').addEventListener('click', function() {
+      document.getElementById('addModal').classList.remove('active');
+      document.getElementById('addForm').reset();
+    });
+
+    // ==== MODAL REKAP ====
+    document.getElementById('rekapBtn').addEventListener('click', function() {
+      generateRekapPerDosen();
+      document.getElementById('rekapModal').classList.add('active');
+    });
+
+    document.getElementById('closeRekapBtn').addEventListener('click', function() {
+      document.getElementById('rekapModal').classList.remove('active');
+    });
+
+    // ==== LOAD DATA DARI GOOGLE SHEET ====
+    async function loadAttendanceFromServer() {
+      try {
+        const response = await fetch(SCRIPT_URL);
+        const result = await response.json();
+        if (result.success && Array.isArray(result.data)) {
+          attendanceData = result.data;
+          renderTable();
+          updateStats();
+        } else {
+          console.error('Gagal memuat data:', result.message || result);
+          showMessage('Gagal memuat data dari server', 'error');
+        }
+      } catch (error) {
+        console.error('Error fetch data:', error);
+        showMessage('Terjadi kesalahan saat mengambil data dari server', 'error');
+      }
+    }
+
+    // Panggil saat halaman selesai load
+    window.addEventListener('load', () => {
+      updateStats(); // awal 0
+      loadAttendanceFromServer();
+    });
+
+    // ==== SIMPAN DATA (POST ke Apps Script) ====
+    document.getElementById('addForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const submitBtn = document.querySelector('.btn-submit');
+      const originalText = submitBtn.textContent;
+      submitBtn.textContent = 'Menyimpan...';
+      submitBtn.disabled = true;
+
+      const newAttendance = {
+        id: Date.now().toString(),
+        nama: document.getElementById('dosenName').value,
+        mataKuliah: document.getElementById('mataKuliah').value,
+        pertemuan: document.getElementById('pertemuan').value,
+        semester: document.getElementById('semester').value,
+        tanggal: document.getElementById('tanggal').value,
+        status: document.getElementById('status').value,
+        createdAt: new Date().toISOString()
+      };
+
+      try {
+        const res = await fetch(SCRIPT_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            action: 'create',
+            ...newAttendance
+          })
+        });
+
+        const result = await res.json();
+
+        if (result.success) {
+          showMessage('Data kehadiran berhasil disimpan!', 'success');
+          document.getElementById('addModal').classList.remove('active');
+          document.getElementById('addForm').reset();
+          await loadAttendanceFromServer();
+        } else {
+          console.error('Gagal simpan data:', result);
+          showMessage('Gagal menyimpan data: ' + (result.message || ''), 'error');
+        }
+      } catch (error) {
+        console.error('Error simpan:', error);
+        showMessage('Terjadi kesalahan saat menyimpan data', 'error');
+      }
+
+      submitBtn.textContent = originalText;
+      submitBtn.disabled = false;
+    });
+
+    // ==== REKAP PER DOSEN ====
+    function generateRekapPerDosen() {
+      const rekapContent = document.getElementById('rekapContent');
+
+      if (!attendanceData || attendanceData.length === 0) {
+        rekapContent.innerHTML = `
+          <div class="empty-state">
+            <svg width="80" height="80" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="1">
+              <path d="M9 11l3 3L22 4"></path>
+              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+            </svg>
+            <h3>Belum Ada Data untuk Direkap</h3>
+            <p>Tambahkan data kehadiran terlebih dahulu</p>
+          </div>
+        `;
+        return;
+      }
+
+      const urutanDosen = [
+        "Yayah Robiatul Adawiyah, M.Pd.I",
+        "Isnol Khotimah, M. Pd.",
+        "Dr. Agus Sultoni Imami, S.Psi, M.Pd.I",
+        "Faizatur Rohmah, M.Pd.",
+        "Dr. Sulton Firdaus, M.Pd",
+        "Dr. Mu'alim Wijaya, M.Pd.I",
+        "Feriska Listrianti, M.Pd.",
+        "Dr. Umar Manshur, M.A.",
+        "Hj. Wiwin Warliah, S.Fil.I., M.Sosio.",
+        "Dr. Farhan, M. Sos.I",
+        "Dr. Bashori Alwi, M. SI"
+      ];
+
+      const rekapByDosenMatkul = {};
+
+      attendanceData.forEach(item => {
+        const key = `${item.nama}|${item.mataKuliah}`;
+
+        if (!rekapByDosenMatkul[key]) {
+          rekapByDosenMatkul[key] = {
+            nama: item.nama,
+            mataKuliah: item.mataKuliah,
+            totalKehadiran: 0,
+            hadir: 0,
+            tidakHadir: 0
+          };
+        }
+
+        rekapByDosenMatkul[key].totalKehadiran++;
+
+        if (item.status === 'Hadir') rekapByDosenMatkul[key].hadir++;
+        if (item.status === 'Tidak Hadir') rekapByDosenMatkul[key].tidakHadir++;
+      });
+
+      let html = '';
+      urutanDosen.forEach(namaDosen => {
+        const mataKuliahDosen = Object.values(rekapByDosenMatkul)
+          .filter(item => item.nama === namaDosen)
+          .sort((a, b) => a.mataKuliah.localeCompare(b.mataKuliah));
+
+        mataKuliahDosen.forEach(rekap => {
+          const totalPertemuanMaksimal = 16;
+          const persentaseKehadiran =
+            ((rekap.hadir / totalPertemuanMaksimal) * 100).toFixed(1);
+
+          html += `
+            <div class="rekap-card">
+              <div class="rekap-header">
+                <div>
+                  <h3>${rekap.nama}</h3>
+                  <p style="margin: 4px 0 0 0; font-size: 14px; color: #667eea; font-weight: 600;">
+                    ${rekap.mataKuliah}
+                  </p>
+                </div>
+                <span class="status-badge"
+                      style="background: #667eea; color: white;">
+                      ${persentaseKehadiran}% Hadir
+                </span>
+              </div>
+              <div class="rekap-stats">
+                <div class="rekap-stat-item">
+                  <p>Total Pertemuan</p>
+                  <h4>${rekap.totalKehadiran} / 16</h4>
+                </div>
+                <div class="rekap-stat-item" style="background: #d4edda;">
+                  <p>Hadir</p>
+                  <h4 style="color: #155724;">${rekap.hadir}</h4>
+                </div>
+                <div class="rekap-stat-item" style="background: #f8d7da;">
+                  <p>Tidak Hadir</p>
+                  <h4 style="color: #721c24;">${rekap.tidakHadir}</h4>
+                </div>
+                <div class="rekap-stat-item" style="background: #fff3cd;">
+                  <p>Sisa Pertemuan</p>
+                  <h4 style="color: #856404;">
+                    ${16 - rekap.totalKehadiran}
+                  </h4>
+                </div>
+              </div>
+            </div>
+          `;
+        });
+      });
+
+      rekapContent.innerHTML = html || `
+        <div class="empty-state">
+          <h3>Belum ada data rekap untuk dosen yang terdaftar</h3>
+        </div>
+      `;
+    }
+
+    // ==== FORMAT TANGGAL ====
+    function formatDate(dateString) {
+      if (!dateString) return '-';
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return dateString;
+      const options = { year: 'numeric', month: 'long', day: 'numeric' };
+      return date.toLocaleDateString('id-ID', options);
+    }
+
+    function getStatusClass(status) {
+      if (status === 'Hadir') return 'status-hadir';
+      if (status === 'Tidak Hadir') return 'status-tidak-hadir';
+      return '';
+    }
+
+    // ==== RENDER TABEL ====
+    function renderTable() {
+      const tbody = document.getElementById('tableBody');
+
+      if (!attendanceData || attendanceData.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8">
+              <div class="empty-state">
+                <svg width="80" height="80" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="1">
+                  <path d="M9 11l3 3L22 4"></path>
+                  <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                </svg>
+                <h3>Belum Ada Data Kehadiran</h3>
+                <p>Klik tombol "Tambah Data Absensi" untuk menambahkan data baru</p>
+              </div>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      const sortedData = [...attendanceData].sort((a, b) => {
+        const dateA = new Date(a.tanggal);
+        const dateB = new Date(b.tanggal);
+
+        if (!isNaN(dateA) && !isNaN(dateB) && dateA.getTime() !== dateB.getTime()) {
+          return dateB.getTime() - dateA.getTime();
+        }
+
+        const createdA = new Date(a.createdAt || a.id);
+        const createdB = new Date(b.createdAt || b.id);
+        if (!isNaN(createdA) && !isNaN(createdB)) {
+          return createdB.getTime() - createdA.getTime();
+        }
+
+        return 0;
+      });
+
+      tbody.innerHTML = sortedData.map((item, index) => {
+        const pertemuanText = item.pertemuan || item.materiKuliah || '-';
+        return `
+          <tr>
+            <td>${index + 1}</td>
+            <td>${item.nama}</td>
+            <td>${item.mataKuliah}</td>
+            <td>${pertemuanText}</td>
+            <td>${item.semester}</td>
+            <td>${formatDate(item.tanggal)}</td>
+            <td><span class="status-badge ${getStatusClass(item.status)}">${item.status}</span></td>
+            <td>
+              <button class="delete-btn" onclick="deleteAttendance('${item.id}')" data-id="${item.id}">
+                <svg width="14" height="14" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="3,6 5,6 21,6"></polyline>
+                  <path d="M19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"></path>
+                </svg>
+                Hapus
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // ==== HAPUS DATA ====
+    async function deleteAttendance(id) {
+      const button = document.querySelector(`[data-id="${id}"]`);
+
+      if (!button) return;
+
+      if (button.classList.contains('confirm-delete')) {
+        const originalHtml = button.innerHTML;
+        button.textContent = 'Menghapus...';
+        button.disabled = true;
+
+        try {
+          const res = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              action: 'delete',
+              id: id
+            })
+          });
+
+          const result = await res.json();
+
+          if (result.success) {
+            showMessage('Data berhasil dihapus!', 'success');
+            await loadAttendanceFromServer();
+          } else {
+            console.error('Gagal menghapus:', result);
+            showMessage('Gagal menghapus data: ' + (result.message || ''), 'error');
+            button.innerHTML = originalHtml;
+            button.disabled = false;
+          }
+        } catch (error) {
+          console.error('Error delete:', error);
+          showMessage('Terjadi kesalahan saat menghapus data', 'error');
+          button.innerHTML = originalHtml;
+          button.disabled = false;
+        }
+      } else {
+        button.classList.add('confirm-delete');
+        button.innerHTML = `
+          <svg width="14" height="14" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="15" y1="9" x2="9" y2="15"></line>
+            <line x1="9" y1="9" x2="15" y2="15"></line>
+          </svg>
+          Yakin Hapus?
+        `;
+
+        setTimeout(() => {
+          if (button && button.classList.contains('confirm-delete')) {
+            button.classList.remove('confirm-delete');
+            button.innerHTML = `
+              <svg width="14" height="14" viewBox="0 0 24 24"
+                   fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3,6 5,6 21,6"></polyline>
+                <path d="M19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"></path>
+              </svg>
+              Hapus
+            `;
+          }
+        }, 3000);
+      }
+    }
+
+    // ==== NOTIFIKASI ====
+    function showMessage(message, type) {
+      const existingMessage = document.querySelector('.notification-message');
+      if (existingMessage) {
+        existingMessage.remove();
+      }
+
+      const messageDiv = document.createElement('div');
+      messageDiv.className = 'notification-message';
+      messageDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? '#d4edda' : '#f8d7da'};
+        color: ${type === 'success' ? '#155724' : '#721c24'};
+        padding: 12px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 9999;
+        font-weight: 600;
+        animation: slideIn 0.3s ease;
+        max-width: 300px;
+        word-wrap: break-word;
+      `;
+
+      const icon = type === 'success' ? '✅' : '❌';
+      messageDiv.innerHTML = `${icon} ${message}`;
+
+      document.body.appendChild(messageDiv);
+
+      setTimeout(() => {
+        if (messageDiv.parentNode) {
+          messageDiv.remove();
+        }
+      }, 4000);
+    }
+
+    // ==== UPDATE STATISTIK ====
+    function updateStats() {
+      const today = new Date().toISOString().split('T')[0];
+      const todayAttendance = (attendanceData || []).filter(item =>
+        item.tanggal === today && item.status === 'Hadir'
+      );
+      const uniqueDosen = new Set((attendanceData || []).map(item => item.nama));
+
+      document.getElementById('totalKehadiran').textContent = attendanceData.length || 0;
+      document.getElementById('hadirHariIni').textContent = todayAttendance.length || 0;
+      document.getElementById('totalDosen').textContent = uniqueDosen.size || 0;
+    }
+  </script>
+</body>
+</html>
